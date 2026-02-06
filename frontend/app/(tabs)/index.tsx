@@ -1,98 +1,241 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const COLORS = {
+  primary: '#2DA9DF',
+  blue: '#2563EB',
+  green: '#16A34A',
+  bg: '#F9FAFB',
+  gray: '#6B7280',
+};
 
-export default function HomeScreen() {
+type Filtro = 'diario' | 'semanal' | 'mensual';
+
+const FILTROS: Filtro[] = ['diario', 'semanal', 'mensual'];
+
+const METRICS = [
+  {
+    label: 'Convocatorias',
+    value: 128,
+    icon: 'megaphone-outline',
+    color: COLORS.blue,
+  },
+  {
+    label: 'Historiales clínicos',
+    value: 342,
+    icon: 'document-text-outline',
+    color: COLORS.green,
+  },
+] as const;
+
+export default function DashboardScreen() {
+  const [filtro, setFiltro] = useState<Filtro>('mensual');
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>Dashboard</Text>
+      <Text style={styles.subtitle}>
+        Resumen general del sistema óptico
+      </Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View style={styles.cardsRow}>
+        {METRICS.map((item) => (
+          <View key={item.label} style={styles.metricCard}>
+            <Ionicons
+              name={item.icon}
+              size={26}
+              color={item.color}
+            />
+            <Text style={styles.metricNumber}>
+              {item.value}
+            </Text>
+            <Text style={styles.metricLabel}>
+              {item.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.chartCard}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>
+            Análisis de rendimiento
+          </Text>
+
+          <View style={styles.filters}>
+            {FILTROS.map((item) => (
+              <Pressable
+                key={item}
+                style={[
+                  styles.filterButton,
+                  filtro === item && styles.filterActive,
+                ]}
+                onPress={() => setFiltro(item)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    filtro === item &&
+                      styles.filterTextActive,
+                  ]}
+                >
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.legend}>
+          {METRICS.map((item) => (
+            <View key={item.label} style={styles.legendItem}>
+              <View
+                style={[
+                  styles.legendColor,
+                  { backgroundColor: item.color },
+                ]}
+              />
+              <Text style={styles.legendText}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.chartPlaceholder}>
+          <Ionicons
+            name="bar-chart-outline"
+            size={48}
+            color="#9CA3AF"
+          />
+          <Text style={styles.chartText}>
+            Gráfico de barras dobles ({filtro})
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flexGrow: 1,
+    padding: 24,
+    paddingBottom: Platform.OS === 'web' ? 24 : 16,
+    backgroundColor: COLORS.bg,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  subtitle: {
+    marginTop: 4,
+    marginBottom: 24,
+    color: COLORS.gray,
+  },
+
+  cardsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 24,
+  },
+  metricCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 14,
+    gap: 6,
+  },
+  metricNumber: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  metricLabel: {
+    color: COLORS.gray,
+    fontSize: 13,
+  },
+
+  chartCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 14,
+  },
+  chartHeader: {
+    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+    justifyContent: 'space-between',
+    alignItems:
+      Platform.OS === 'web' ? 'center' : 'flex-start',
+    gap: 12,
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  filters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#E5E7EB',
+  },
+  filterActive: {
+    backgroundColor: COLORS.primary,
+  },
+  filterText: {
+    fontSize: 12,
+    color: '#374151',
+    textTransform: 'capitalize',
+  },
+  filterTextActive: {
+    color: '#FFFFFF',
+  },
+
+  legend: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 16,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+  },
+  legendText: {
+    fontSize: 12,
+    color: '#374151',
+  },
+
+  chartPlaceholder: {
+    marginTop: 20,
+    height: 220,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  chartText: {
+    color: COLORS.gray,
   },
 });
