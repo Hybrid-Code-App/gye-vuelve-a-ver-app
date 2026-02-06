@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -29,17 +30,25 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen
-          name="(tabs)"
-          options={{ headerShown: false }}
-        />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        style="auto"
+      />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: 'transparent',
+          },
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="modal"
           options={{
@@ -48,7 +57,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
